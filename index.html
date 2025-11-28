@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>РуРум | Мессенджер</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Основное приложение -->
+    <div class="app-container" id="appScreen">
+        <!-- Боковая панель -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button class="mobile-menu-toggle" aria-label="Меню">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="logo">
+                        <div class="logo-icon">
+                            <div class="logo-gradient">РР</div>
+                            <div class="online-dot"></div>
+                        </div>
+                        <span>РуРум</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="icon-btn new-chat-btn" aria-label="Новая беседа">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="icon-btn add-friend-btn" aria-label="Добавить друга">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                    <button class="icon-btn settings-btn" id="settingsBtn" aria-label="Настройки">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Навигация -->
+            <div class="sidebar-nav">
+                <button class="nav-btn active" data-tab="chats">
+                    <i class="fas fa-comments"></i>
+                    <span>Чаты</span>
+                </button>
+                <button class="nav-btn" data-tab="friends">
+                    <i class="fas fa-user-friends"></i>
+                    <span>Друзья</span>
+                    <span class="nav-badge" id="friendsBadge">0</span>
+                </button>
+            </div>
+
+            <!-- Приветствие пользователя -->
+            <div class="user-welcome">
+                <div class="welcome-avatar" id="userAvatarContainer">
+                    <div class="avatar-placeholder user" id="userAvatar">П</div>
+                    <div class="avatar-upload">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <div class="welcome-text">
+                    <div class="welcome-name" id="userName">Пользователь</div>
+                    <div class="welcome-message">Добро пожаловать!</div>
+                </div>
+            </div>
+
+            <!-- Поиск -->
+            <div class="search-container">
+                <div class="search-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Поиск...">
+                </div>
+            </div>
+
+            <!-- Вкладка чатов -->
+            <div class="tab-content active" id="chatsTab">
+                <!-- Список чатов -->
+                <div class="chats-list">
+                    <!-- Чат-лист будет заполняться динамически -->
+                </div>
+
+                <!-- Состояние пустого списка -->
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Нет бесед</h3>
+                    <p>Начните общение, создав новую беседу</p>
+                    <button class="start-chat-btn" onclick="messenger.showNewChatModal()">
+                        <i class="fas fa-plus"></i>
+                        Начать беседу
+                    </button>
+                </div>
+            </div>
+
+            <!-- Вкладка друзей -->
+            <div class="tab-content" id="friendsTab">
+                <!-- Список друзей -->
+                <div class="friends-list">
+                    <!-- Список друзей будет заполняться динамически -->
+                </div>
+
+                <!-- Состояние пустого списка друзей -->
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <h3>Нет друзей</h3>
+                    <p>Добавьте друзей чтобы начать общение</p>
+                    <button class="start-chat-btn" onclick="messenger.showAddFriendModal()">
+                        <i class="fas fa-user-plus"></i>
+                        Добавить друга
+                    </button>
+                </div>
+            </div>
+
+            <!-- Футер боковой панели -->
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar-placeholder small" id="footerUserAvatar">П</div>
+                    <div class="user-info">
+                        <div class="user-name" id="footerUserName">Пользователь</div>
+                        <div class="user-status">online</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Область чата -->
+        <div class="chat-area">
+            <!-- Экран приветствия -->
+            <div class="welcome-screen">
+                <div class="welcome-content">
+                    <div class="welcome-icon">
+                        <div class="logo-gradient large">РР</div>
+                    </div>
+                    <h1>Добро пожаловать в РуРум!</h1>
+                    <p>Создайте новую беседу или начните общение с друзьями</p>
+                    <div class="welcome-features">
+                        <div class="feature">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Безопасно</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-bolt"></i>
+                            <span>Быстро</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-user-friends"></i>
+                            <span>Друзья</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Активный чат -->
+            <div class="active-chat" style="display: none;">
+                <div class="chat-header">
+                    <div class="chat-partner-info">
+                        <div class="avatar-placeholder small" id="chatPartnerAvatar">Ч</div>
+                        <div class="partner-details">
+                            <div class="partner-name" id="chatPartnerName">Беседа</div>
+                            <div class="partner-status">online</div>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="action-btn" aria-label="Информация">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Контейнер сообщений -->
+                <div class="messages-container">
+                    <!-- Сообщения будут здесь -->
+                </div>
+
+                <!-- Поле ввода сообщения -->
+                <div class="message-input-container">
+                    <div class="input-wrapper">
+                        <textarea class="message-input" placeholder="Введите сообщение..." rows="1"></textarea>
+                    </div>
+                    <button class="send-btn" aria-label="Отправить сообщение">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно создания чата -->
+    <div class="modal-overlay" id="newChatModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Новая беседа</h3>
+                <button class="close-modal" aria-label="Закрыть">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="chatNameInput">Название беседы</label>
+                    <input type="text" id="chatNameInput" class="chat-name-input" placeholder="Введите название беседы">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary cancel-btn">Отмена</button>
+                    <button class="btn-primary create-chat-btn">Создать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления друга -->
+    <div class="modal-overlay" id="addFriendModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Добавить друга</h3>
+                <button class="close-modal" aria-label="Закрыть">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="friendNameInput">Имя друга</label>
+                    <input type="text" id="friendNameInput" class="chat-name-input" placeholder="Введите уникальное имя">
+                    <div class="input-hint">Имя должно быть уникальным</div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary cancel-add-friend-btn">Отмена</button>
+                    <button class="btn-primary add-friend-confirm-btn">Добавить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно настроек -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Настройки профиля</h3>
+                <button class="close-modal" aria-label="Закрыть">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h4>Аватар</h4>
+                    <div class="avatar-settings">
+                        <div class="avatar-preview">
+                            <div class="avatar-placeholder large" id="settingsAvatarPreview">П</div>
+                            <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                            <button class="avatar-upload-btn" onclick="document.getElementById('avatarUpload').click()">
+                                <i class="fas fa-camera"></i>
+                                Сменить аватар
+                            </button>
+                        </div>
+                        <div class="avatar-colors">
+                            <div class="color-option" data-color="#00D764" style="background: #00D764;"></div>
+                            <div class="color-option" data-color="#FF6B6B" style="background: #FF6B6B;"></div>
+                            <div class="color-option" data-color="#4ECDC4" style="background: #4ECDC4;"></div>
+                            <div class="color-option" data-color="#45B7D1" style="background: #45B7D1;"></div>
+                            <div class="color-option" data-color="#96CEB4" style="background: #96CEB4;"></div>
+                            <div class="color-option" data-color="#FFEAA7" style="background: #FFEAA7;"></div>
+                            <div class="color-option" data-color="#DDA0DD" style="background: #DDA0DD;"></div>
+                            <div class="color-option" data-color="#FFA07A" style="background: #FFA07A;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h4>Информация профиля</h4>
+                    <div class="form-group">
+                        <label for="userNameInput">Имя пользователя</label>
+                        <input type="text" id="userNameInput" class="settings-input" placeholder="Введите ваше имя">
+                    </div>
+                    <div class="form-group">
+                        <label for="userStatusInput">Статус</label>
+                        <input type="text" id="userStatusInput" class="settings-input" placeholder="Введите ваш статус">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h4>Внешний вид</h4>
+                    <div class="theme-options">
+                        <label class="theme-option">
+                            <input type="radio" name="theme" value="light" checked>
+                            <span class="theme-checkmark"></span>
+                            Светлая тема
+                        </label>
+                        <label class="theme-option">
+                            <input type="radio" name="theme" value="dark">
+                            <span class="theme-checkmark"></span>
+                            Темная тема
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-secondary cancel-settings-btn">Отмена</button>
+                    <button class="btn-primary save-settings-btn">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
