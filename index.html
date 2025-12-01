@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>РуРум | Мессенджер</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Стили для системы заявок */
+        .requests-badge {
+            background: #FF6B6B;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            animation: pulse 2s infinite;
+            border: 2px solid var(--white);
+        }
+        
+        .request-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid var(--orange-light);
+            transition: var(--transition);
+            background: var(--white);
+        }
+        
+        .request-item:hover {
+            background: var(--orange-light);
+            transform: translateX(2px);
+        }
+        
+        .request-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        
+        .request-info .friend-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-dark);
+            margin-bottom: 2px;
+        }
+        
+        .request-time {
+            font-size: 12px;
+            color: var(--gray-medium);
+            font-weight: 400;
+        }
+        
+        .request-actions {
+            display: flex;
+            gap: 8px;
+            opacity: 1;
+            transition: var(--transition);
+        }
+        
+        .request-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .request-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .accept-btn {
+            background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+            color: var(--white);
+        }
+        
+        .accept-btn:hover {
+            background: linear-gradient(135deg, #3DBDB4 0%, #34907D 100%);
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+        }
+        
+        .reject-btn {
+            background: linear-gradient(135deg, #FF6B6B 0%, #EE5A5A 100%);
+            color: var(--white);
+        }
+        
+        .reject-btn:hover {
+            background: linear-gradient(135deg, #EE5A5A 0%, #DD4A4A 100%);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+        
+        .no-requests {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-medium);
+        }
+        
+        .no-requests i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: var(--orange-primary);
+            opacity: 0.3;
+        }
+        
+        .no-requests h4 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+        
+        .no-requests p {
+            font-size: 14px;
+            opacity: 0.7;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        
+        /* Стили для кнопок закрытия чатов */
+        .close-chat-btn {
+            background: var(--orange-light);
+            color: var(--orange-primary);
+        }
+        
+        .close-chat-btn:hover {
+            background: var(--orange-primary);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(246, 167, 94, 0.3);
+        }
+        
+        .close-chat-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Стили для кнопок действий в списке чатов */
+        .chat-item-actions {
+            display: none;
+            gap: 4px;
+            margin-left: 8px;
+        }
+        
+        .chat-item:hover .chat-item-actions {
+            display: flex;
+        }
+        
+        .chat-item-action-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: none;
+            background: var(--orange-light);
+            color: var(--orange-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: var(--transition);
+        }
+        
+        .chat-item-action-btn.close {
+            background: var(--orange-light);
+            color: var(--orange-primary);
+        }
+        
+        .chat-item-action-btn.close:hover {
+            background: var(--orange-primary);
+            color: var(--white);
+        }
+        
+        .chat-item-action-btn.delete {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+        
+        .chat-item-action-btn.delete:hover {
+            background: var(--danger);
+            color: var(--white);
+        }
+        
+        /* Анимация закрытия чата */
+        @keyframes chatClosing {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            50% {
+                opacity: 0.5;
+                transform: translateX(-10px);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(100%);
+                height: 0;
+                padding: 0;
+                margin: 0;
+                border: none;
+            }
+        }
+        
+        .chat-item.closing {
+            animation: chatClosing 0.4s ease forwards;
+            pointer-events: none;
+        }
+        
+        /* На мобильных скрываем кнопки действий в списке */
+        @media (max-width: 768px) {
+            .chat-item-actions {
+                display: none !important;
+            }
+            
+            .close-chat-btn {
+                display: none;
+            }
+            
+            .mobile-back-btn {
+                display: flex;
+            }
+        }
+        
+        /* Стили для удаления чатов */
+        .delete-chat-btn {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+        
+        .delete-chat-btn:hover {
+            background: var(--danger);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        }
+        
+        .delete-chat-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Стили для модального окна подтверждения удаления */
+        .confirm-delete-modal .modal-content {
+            max-width: 400px;
+        }
+        
+        .delete-chat-icon {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .delete-chat-icon i {
+            font-size: 48px;
+            color: var(--danger);
+        }
+        
+        .delete-chat-message {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .delete-chat-message h4 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        
+        #deleteChatName {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--orange-primary);
+            margin-bottom: 8px;
+        }
+        
+        .delete-chat-message p {
+            font-size: 14px;
+            color: var(--gray-dark);
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+        
+        .delete-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        .delete-cancel-btn {
+            background: var(--orange-light);
+            color: var(--orange-primary);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .delete-cancel-btn:hover {
+            background: var(--orange-primary);
+            color: var(--white);
+        }
+        
+        .delete-confirm-btn {
+            background: var(--danger);
+            color: var(--white);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .delete-confirm-btn:hover {
+            background: #ff3b4b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        }
+        
+        .delete-confirm-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Анимация удаления чата */
+        @keyframes chatDeleted {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            50% {
+                opacity: 0.5;
+                transform: translateX(-10px);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(100%);
+                height: 0;
+                padding: 0;
+                margin: 0;
+                border: none;
+            }
+        }
+        
+        .chat-item.deleting {
+            animation: chatDeleted 0.4s ease forwards;
+            pointer-events: none;
+        }
+        
+        /* Адаптивные стили */
+        @media (max-width: 768px) {
+            .delete-chat-btn {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .delete-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .delete-cancel-btn,
+            .delete-confirm-btn {
+                width: 100%;
+                padding: 14px;
+            }
+            
+            .request-item {
+                padding: 14px 16px;
+            }
+            
+            .request-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 12px;
+            }
+            
+            .requests-badge {
+                width: 18px;
+                height: 18px;
+                font-size: 10px;
+            }
+            
+            .no-requests {
+                padding: 40px 20px;
+            }
+            
+            .no-requests i {
+                font-size: 36px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .request-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 12px;
+            }
+            
+            .request-info {
+                width: 100%;
+            }
+            
+            .request-actions {
+                width: 100%;
+                justify-content: flex-end;
+                opacity: 1;
+            }
+            
+            .request-btn {
+                width: 44px;
+                height: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Основное приложение -->
+    <div class="app-container" id="appScreen">
+        <!-- Боковая панель -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button class="mobile-menu-toggle" aria-label="Меню">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="logo">
+                        <div class="logo-icon">
+                            <img src="https://i.ibb.co/yFzHxQWf/logo.png" alt="РуРум" class="logo-image">
+                            <div class="online-dot"></div>
+                        </div>
+                        <span>РуРум</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="icon-btn new-chat-btn" aria-label="Новая беседа">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="icon-btn add-friend-btn" aria-label="Добавить друга">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                    <button class="icon-btn requests-btn" id="requestsBtn" aria-label="Заявки в друзья">
+                        <i class="fas fa-user-clock"></i>
+                        <span class="requests-badge" id="requestsBadge" style="display: none;">0</span>
+                    </button>
+                    <button class="icon-btn settings-btn" id="settingsBtn" aria-label="Настройки">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Навигация -->
+            <div class="sidebar-nav">
+                <button class="nav-btn active" data-tab="chats">
+                    <i class="fas fa-comments"></i>
+                    <span>Чаты</span>
+                </button>
+                <button class="nav-btn" data-tab="friends">
+                    <i class="fas fa-user-friends"></i>
+                    <span>Друзья</span>
+                    <span class="nav-badge" id="friendsBadge">0</span>
+                </button>
+            </div>
+
+            <!-- Приветствие пользователя -->
+            <div class="user-welcome">
+                <div class="welcome-avatar" id="userAvatarContainer">
+                    <div class="avatar-placeholder user" id="userAvatar">П</div>
+                    <div class="avatar-upload">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <div class="welcome-text">
+                    <div class="welcome-name" id="userName">Пользователь</div>
+                    <div class="welcome-message">Добро пожаловать!</div>
+                </div>
+            </div>
+
+            <!-- Поиск -->
+            <div class="search-container">
+                <div class="search-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Поиск...">
+                </div>
+            </div>
+
+            <!-- Вкладка чатов -->
+            <div class="tab-content active" id="chatsTab">
+                <!-- Список чатов -->
+                <div class="chats-list">
+                    <!-- Чат-лист будет заполняться динамически -->
+                </div>
+
+                <!-- Состояние пустого списка -->
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Нет бесед</h3>
+                    <p>Начните общение, создав новую беседу</p>
+                    <button class="start-chat-btn">
+                        <i class="fas fa-plus"></i>
+                        Начать беседу
+                    </button>
+                </div>
+            </div>
+
+            <!-- Вкладка друзей -->
+            <div class="tab-content" id="friendsTab">
+                <!-- Список друзей -->
+                <div class="friends-list">
+                    <!-- Список друзей будет заполняться динамически -->
+                </div>
+
+                <!-- Состояние пустого списка друзей -->
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <h3>Нет друзей</h3>
+                    <p>Добавьте друзей чтобы начать общение</p>
+                    <button class="start-chat-btn">
+                        <i class="fas fa-user-plus"></i>
+                        Добавить друга
+                    </button>
+                </div>
+            </div>
+
+            <!-- Футер боковой панели -->
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar-placeholder small" id="footerUserAvatar">П</div>
+                    <div class="user-info">
+                        <div class="user-name" id="footerUserName">Пользователь</div>
+                        <div class="user-status">online</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Область чата -->
+        <div class="chat-area">
+            <!-- Мобильный хедер -->
+            <div class="mobile-chat-header" style="display: none;">
+                <button class="mobile-back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="mobile-chat-info">
+                    <div class="avatar-placeholder small" id="mobileChatAvatar">Ч</div>
+                    <div class="mobile-partner-details">
+                        <div class="partner-name" id="mobilePartnerName">Беседа</div>
+                        <div class="partner-status">online</div>
+                    </div>
+                </div>
+                <button class="mobile-chat-menu">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            </div>
+
+            <!-- Экран приветствия -->
+            <div class="welcome-screen">
+                <div class="welcome-content">
+                    <div class="welcome-icon">
+                        <img src="https://i.ibb.co/yFzHxQWf/logo.png" alt="РуРум" class="logo-image large">
+                    </div>
+                    <h1>Добро пожаловать в РуРум!</h1>
+                    <p>Создайте новую беседу или начните общение с друзьями</p>
+                    <div class="welcome-features">
+                        <div class="feature">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Безопасно</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-bolt"></i>
+                            <span>Быстро</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-user-friends"></i>
+                            <span>Друзья</span>
+                        </div>
+                    </div>
+                    <div class="mobile-start-buttons" style="display: none;">
+                        <button class="start-chat-btn mobile-btn">
+                            <i class="fas fa-plus"></i>
+                            Новая беседа
+                        </button>
+                        <button class="start-chat-btn mobile-btn">
+                            <i class="fas fa-user-plus"></i>
+                            Добавить друга
+                        </button>
+                    </div>
+                    <!-- Кнопка тестового чата -->
+                    <div class="test-chat-container">
+                        <button class="test-chat-btn" id="testBtn">
+                            <i class="fas fa-vial"></i>
+                            Войти в тестовый чат
+                        </button>
+                        <p class="test-chat-hint">Для проверки связи между устройствами</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Активный чат -->
+            <div class="active-chat" style="display: none;">
+                <div class="chat-header">
+                    <div class="chat-partner-info">
+                        <div class="avatar-placeholder small" id="chatPartnerAvatar">Ч</div>
+                        <div class="partner-details">
+                            <div class="partner-name" id="chatPartnerName">Беседа</div>
+                            <div class="partner-status">online</div>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="action-btn close-chat-btn" aria-label="Закрыть чат" title="Закрыть чат">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <button class="action-btn delete-chat-btn" aria-label="Удалить чат" title="Удалить чат">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="action-btn" aria-label="Информация">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Контейнер сообщений -->
+                <div class="messages-container">
+                    <!-- Сообщения будут здесь -->
+                </div>
+
+                <!-- Поле ввода сообщения -->
+                <div class="message-input-container">
+                    <div class="input-wrapper">
+                        <textarea class="message-input" placeholder="Введите сообщение..." rows="1"></textarea>
+                    </div>
+                    <button class="send-btn" aria-label="Отправить сообщение">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальные окна -->
+    <div class="modal-overlay" id="newChatModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Новая беседа</h3>
+                <button class="close-modal" aria-label="Закрыть">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="chatNameInput">Название беседы</label>
+                    <input type="text" id="chatNameInput" class="chat-name-input" placeholder="Введите название беседы">
+                    <div class="input-hint">Используйте одинаковое название на всех устройствах для создания общего чата</div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary cancel-btn">Отмена</button>
+                    <button class="btn-primary create-chat-btn">Создать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addFriendModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Добавить друга</h3>
+                <button class="close-modal" aria-label="Закрыть">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="friendNameInput">Имя друга</label>
+                    <input type="text" id="friendNameInput" class="chat-name-input" placeholder="Введите имя пользователя">
+                    <div class="input-hint">Отправит заявку в друзья этому пользователю</div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary cancel-add-friend-btn">Отмена</button>
+                    <button class="btn-primary add-friend-confirm-btn">Отправить заявку</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="friendRequestsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Заявки в друзья</h3>
+                <button class="close-modal" aria-label="Закрыть">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="requests-list" id="requestsList">
+                    <!-- Заявки будут здесь -->
+                </div>
+                <div class="no-requests" id="noRequestsMessage" style="display: none;">
+                    <i class="fas fa-user-clock" style="font-size: 48px; margin-bottom: 20px; color: var(--gray-medium);"></i>
+                    <h4>Нет заявок в друзья</h4>
+                    <p>Здесь будут появляться заявки от других пользователей</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="deleteChatModal">
+        <div class="modal-content confirm-delete-modal">
+            <div class="modal-header">
+                <h3>Удалить чат</h3>
+                <button class="close-modal" aria-label="Закрыть">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="delete-chat-icon">
+                    <i class="fas fa-trash"></i>
+                </div>
+                <div class="delete-chat-message">
+                    <h4>Вы уверены, что хотите удалить этот чат?</h4>
+                    <p id="deleteChatName">Беседа</p>
+                    <p>Все сообщения будут удалены без возможности восстановления.</p>
+                </div>
+                <div class="delete-actions">
+                    <button class="btn-secondary delete-cancel-btn">Отмена</button>
+                    <button class="btn-primary delete-confirm-btn">Удалить чат</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Настройки профиля</h3>
+                <button class="close-modal" aria-label="Закрыть">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h4>Аватар</h4>
+                    <div class="avatar-settings">
+                        <div class="avatar-preview">
+                            <div class="avatar-placeholder large" id="settingsAvatarPreview">П</div>
+                            <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                            <button class="avatar-upload-btn">
+                                <i class="fas fa-camera"></i>
+                                Сменить аватар
+                            </button>
+                        </div>
+                        <div class="avatar-colors">
+                            <div class="color-option" data-color="#f6a75e" style="background: #f6a75e;"></div>
+                            <div class="color-option" data-color="#FF6B6B" style="background: #FF6B6B;"></div>
+                            <div class="color-option" data-color="#4ECDC4" style="background: #4ECDC4;"></div>
+                            <div class="color-option" data-color="#45B7D1" style="background: #45B7D1;"></div>
+                            <div class="color-option" data-color="#96CEB4" style="background: #96CEB4;"></div>
+                            <div class="color-option" data-color="#FFEAA7" style="background: #FFEAA7;"></div>
+                            <div class="color-option" data-color="#DDA0DD" style="background: #DDA0DD;"></div>
+                            <div class="color-option" data-color="#FFA07A" style="background: #FFA07A;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h4>Информация профиля</h4>
+                    <div class="form-group">
+                        <label for="userNameInput">Имя пользователя</label>
+                        <input type="text" id="userNameInput" class="settings-input" placeholder="Введите ваше имя">
+                    </div>
+                    <div class="form-group">
+                        <label for="userStatusInput">Статус</label>
+                        <input type="text" id="userStatusInput" class="settings-input" placeholder="Введите ваш статус">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h4>Внешний вид</h4>
+                    <div class="theme-options">
+                        <label class="theme-option">
+                            <input type="radio" name="theme" value="light" checked>
+                            <span class="theme-checkmark"></span>
+                            Светлая тема
+                        </label>
+                        <label class="theme-option">
+                            <input type="radio" name="theme" value="dark">
+                            <span class="theme-checkmark"></span>
+                            Темная тема
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-secondary cancel-settings-btn">Отмена</button>
+                    <button class="btn-primary save-settings-btn">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Добавьте Ably для реального времени -->
+    <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
+    <script>
+        // Инициализация мессенджера
+        console.log('🚀 Starting Rurum Messenger with Ably...');
+        
+        // Создаем глобальные функции отладки ДО инициализации класса
+        window.debugData = function() {
+            console.log('🐛 DEBUG DATA:');
+            if (window.messenger) {
+                console.log('Chats:', messenger.chats);
+                console.log('Friends:', messenger.friends);
+                console.log('Current Chat:', messenger.currentChat);
+                console.log('User:', messenger.currentUser);
+                console.log('Used Names:', Array.from(messenger.usedNames));
+                console.log('Messages:', Array.from(messenger.messages.entries()));
+                console.log('Friend Requests:', messenger.friendRequests || []);
+                console.log('Sent Requests:', messenger.sentRequests || []);
+                console.log('Ably connected:', messenger.ably ? messenger.ably.connection.state : 'No');
+                console.log('Ably channel:', messenger.channel ? messenger.channel.name : 'No channel');
+            } else {
+                console.log('❌ Messenger not initialized yet');
+            }
+        };
+
+        window.testAbly = function() {
+            console.log('🔧 Testing Ably connection...');
+            if (window.messenger && messenger.ably) {
+                console.log('Ably connection state:', messenger.ably.connection.state);
+                console.log('🔧 Ably channel:', messenger.channel ? messenger.channel.name : 'No channel');
+                
+                // Показываем уведомление
+                if (messenger.ably.connection.state === 'connected') {
+                    messenger.showMessage('✅ Ably подключен! Состояние: ' + messenger.ably.connection.state, 'success');
+                } else {
+                    messenger.showMessage('⚠️ Ably состояние: ' + messenger.ably.connection.state, 'warning');
+                }
+            } else {
+                console.log('❌ Ably not initialized');
+                if (window.messenger) {
+                    messenger.showMessage('❌ Ably не инициализирован', 'error');
+                } else {
+                    alert('Messenger not loaded yet');
+                }
+            }
+        };
+
+        window.joinTest = function() {
+            console.log('🧪 Joining test chat...');
+            if (window.messenger) {
+                messenger.joinTestChat();
+            } else {
+                console.log('❌ Messenger not initialized yet');
+                alert('Подождите, мессенджер загружается...');
+            }
+        };
+
+        window.clearData = function() {
+            if (confirm('Очистить все данные? Это перезагрузит страницу.')) {
+                localStorage.clear();
+                location.reload();
+            }
+        };
+
+        // Глобальная функция для закрытия чата
+        window.closeChat = function() {
+            if (window.messenger) {
+                messenger.closeCurrentChat();
+            } else {
+                console.log('❌ Messenger not initialized yet');
+            }
+        };
+
+        // Глобальная функция для выхода из чата
+        window.leaveChat = function(chatId) {
+            if (window.messenger) {
+                messenger.leaveChat(chatId);
+            } else {
+                console.log('❌ Messenger not initialized yet');
+            }
+        };
+
+        // Теперь загружаем основной скрипт
+        document.write('<script src="script.js"><\/script>');
+    </script>
+</body>
+</html>
